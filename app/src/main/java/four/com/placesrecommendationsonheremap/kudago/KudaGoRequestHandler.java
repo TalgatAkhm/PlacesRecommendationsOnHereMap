@@ -14,12 +14,14 @@ import okhttp3.Response;
  * https://docs.kudago.com/api/#page:%D0%BF%D0%BE%D0%B8%D1%81%D0%BA,header:%D0%BF%D0%BE%D0%B8%D1%81%D0%BA-%D0%BF%D0%BE%D0%B8%D1%81%D0%BA
  */
 public final class KudaGoRequestHandler extends AsyncTask<Object, Integer, String> {
+    private final static String TAG = KudaGoRequestHandler.class.getName();
+
     public enum EKudaGoPlacesTypes {
         news, event, place, list
     }
 
-
     private static String DEFAULT_CITY = "spb";
+    private static final String BASE_URL = "https://kudago.com/public-api/v1.4//?";
 
     private final OkHttpClient client = new OkHttpClient();
     private final EKudaGoPlacesTypes type;
@@ -27,10 +29,13 @@ public final class KudaGoRequestHandler extends AsyncTask<Object, Integer, Strin
     private String url;
     private String ctype;
     private String city = DEFAULT_CITY;
-    private double lat, lon, rad;
+    private String q; // search request (поисковый запрос)
+    private double lat = 60.003106, lon = 30.290727, rad = 100;
 
-    public KudaGoRequestHandler(EKudaGoPlacesTypes type) {
+    public KudaGoRequestHandler(EKudaGoPlacesTypes type, String searchRequest) {
         this.type = type;
+        this.q = searchRequest;
+        url = BASE_URL + "q=" + searchRequest + "&type=";
         createUrl();
     }
 
@@ -69,7 +74,7 @@ public final class KudaGoRequestHandler extends AsyncTask<Object, Integer, Strin
         super.onPostExecute(s);
 //        txtString.setText(s);
         //TODO: implement this
-        Log.d("executed",s);
+        Log.d(TAG, s);
     }
 
     private void createUrl() {
