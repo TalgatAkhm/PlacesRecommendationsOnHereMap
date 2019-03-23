@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".StartActivity">
+
+    <fragment
+        class="com.here.android.mpa.mapping.SupportMapFragment"
+        android:id="@+id/mapfragment"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"/>
+
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:gravity="center_horizontal|center_vertical"
+        android:background="@drawable/start_button"
+        android:text="Поехали!"
+        android:textColor="#FFFFFF"
+        />
+    <Button
+        android:id="@+id/find_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:gravity="center_horizontal|bottom"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/start_button"
+        android:text="Найти"
+        android:textColor="#FFFFFF"
+        android:visibility="gone"
+        />
+    <EditText
+        android:id="@+id/kek_button"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:gravity="center_horizontal|bottom"
+        android:textColor="#000000"
+        android:layout_marginBottom="100dp"
+        android:visibility="gone"
+        android:hint="Введите запрос"
+        />
+
+    <include layout="@layout/bottom_sheet" android:visibility="gone"/>
+
+</android.support.design.widget.CoordinatorLayout>
