@@ -47,4 +47,8 @@ dependencies {
     implementation 'org.locationtech.jts:jts-core:1.15.0'
     implementation 'com.android.support:design:26.1.0'
     implementation 'com.github.stfalcon:chatkit:0.3.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.5'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.8.5'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.8.5'
+
 }

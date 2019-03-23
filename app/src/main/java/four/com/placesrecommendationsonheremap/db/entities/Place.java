@@ -15,11 +15,12 @@ public class Place {
     @PrimaryKey(autoGenerate = true)
     private int uid;
 
-    @ColumnInfo(name = "name")
-    private String name;
+    @ColumnInfo(name = "title")
+    private String title;
 
     @ColumnInfo(name = "feature_id")
     private Integer featureId;
+
 
     public int getUid() {
         return uid;
@@ -29,12 +30,12 @@ public class Place {
         this.uid = uid;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Integer getFeatureId() {

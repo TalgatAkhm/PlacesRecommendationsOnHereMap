@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -24,16 +25,20 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.mapping.Map;
+import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.SupportMapFragment;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,8 +47,10 @@ import java.util.List;
 import four.com.placesrecommendationsonheremap.db.AppDatabase;
 import four.com.placesrecommendationsonheremap.db.entities.Author;
 import four.com.placesrecommendationsonheremap.db.entities.Message;
+import four.com.placesrecommendationsonheremap.db.entities.ServerPlace;
 
 public class StartActivity extends AppCompatActivity implements ServerConnectAsyncTask.ServerCallback {
+    private final static String TAG = StartActivity.class.getName();
 
     Button startButton;
     Button findButton;
@@ -69,6 +76,8 @@ public class StartActivity extends AppCompatActivity implements ServerConnectAsy
     private MessageInput messageInput;
 
     private MessagesListAdapter<Message> adapter;
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,6 +179,7 @@ public class StartActivity extends AppCompatActivity implements ServerConnectAsy
                 return true;
             }
         });
+
     }
 
     private void openInput(final View v) {
@@ -233,8 +243,8 @@ public class StartActivity extends AppCompatActivity implements ServerConnectAsy
                                 public void onPositionUpdated(PositioningManager.LocationMethod method,
                                                               GeoPosition position, boolean isMapMatched) {
                                     if (!paused) {
-                                        map.setCenter(position.getCoordinate(),
-                                                Map.Animation.NONE);
+//                                        map.setCenter(position.getCoordinate(),
+//                                                Map.Animation.NONE);
                                     }
                                 }
 
@@ -250,6 +260,7 @@ public class StartActivity extends AppCompatActivity implements ServerConnectAsy
                 }
             }
         });
+
     }
 
     protected void checkPermissions() {
@@ -293,15 +304,52 @@ public class StartActivity extends AppCompatActivity implements ServerConnectAsy
     }
 
     private void sendRequest(String clientInput) {
-        (new ServerConnectAsyncTask(this, clientInput)).execute();
+        String request = "{ \"s\": \""+clientInput+"\"}";
+        (new ServerConnectAsyncTask(this, request)).execute();
     }
 
     @Override
     public void onResult(String string) {
-        Message message = new Message();
-        message.setId(string.hashCode() % 100 + "");
-        message.setText(string);
-        message.setAuthor(chatBot);
-        adapter.addToStart(message, true);
+        if (string == null) {
+            return;
+        }
+
+        try {
+            Log.d(TAG, string);
+            List<ServerPlace> places = mapper.readValue(string,
+                    mapper.getTypeFactory().constructCollectionType(List.class, ServerPlace.class));
+
+            StringBuilder builder = new StringBuilder("Не хочешь сходить?\n\n");
+
+            int count = 0;
+            for (ServerPlace serverPlace : places) {
+                count++;
+                builder.append(count).append(") ").append(serverPlace.getTitle()).append("\n");
+                builder.append("  ").append(serverPlace.getCategories()).append("\n");
+                builder.append("  ").append(serverPlace.getAddress()).append("\n");
+                builder.append("  ").append(serverPlace.getTimetable()).append("\n");
+                builder.append("  ").append(serverPlace.getSiteUrl()).append("\n");
+            }
+
+            String messageText = builder.toString();
+
+            Message message = new Message();
+            message.setId(messageText.hashCode() % 100 + "");
+            message.setText(messageText);
+            message.setAuthor(chatBot);
+            adapter.addToStart(message, true);
+
+            positionOnMap(places);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Error while reading");
+        }
+    }
+
+    private void positionOnMap(List<ServerPlace> places) {
+        for (ServerPlace place : places) {
+            MapMarker marker = new MapMarker(new GeoCoordinate(place.getCoords().getLat(), place.getCoords().getLon()));
+            map.addMapObject(marker);
+        }
     }
 }
