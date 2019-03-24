@@ -9,5 +9,3 @@ def get_morfems(user_input):
 			result.append(mood)
 
 	return result
-
-print(get_morfems("Мне очень плохо, но иногда бывает хорошо, и даже очень хорошо"))
