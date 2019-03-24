@@ -15,6 +15,7 @@ public class ServerConnectAsyncTask extends AsyncTask<Void, Void, String> {
             = MediaType.parse("application/json; charset=utf-8");
 
     private final String url = "http://192.168.43.187:8000/hacksite/get_relevant_places/";
+    private final String urlExtra = "http://192.168.43.187:8000/hacksite/get_with_condition/";
 
     private final OkHttpClient client = new OkHttpClient();
 
@@ -33,9 +34,15 @@ public class ServerConnectAsyncTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected String doInBackground(Void... voids) {
-        String targetUrl = url;
+        String targetUrl;
 
         RequestBody body = RequestBody.create(JSON, request);
+
+        if (request.contains("type")) {
+            targetUrl = urlExtra;
+        } else {
+            targetUrl = url;
+        }
 
         Request request = new Request.Builder()
                 .url(targetUrl)
