@@ -9,6 +9,10 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+import pandas as pd
+import matplotlib.pyplot as plt
+import json
+import csv
 
 # Create your views here.
 @csrf_exempt
@@ -19,8 +23,32 @@ def get_relevant_places(request):
         parsed_data = json.loads(req_data)
         # return HttpResponse("Leonig is gey")
         user_str = str(parsed_data.get("s"))
-        return HttpResponse('[{"id": 6810, "title": "секонд-хенд Christs Teeth", "slug": "christs-teeth", "address": "Лиговский просп., д. 74", "timetable": "ежедневно 13:00–21:00", "phone": "+7 921 552-82-92", "is_stub": false, "description": "<p>Категорично-ироничный секонд-хенд с огромным обилием всего, что только можно себе представить.</p>", "site_url": "https://kudago.com/spb/place/christs-teeth/", "foreign_url": "https://vk.com/christ_teeth", "coords": {"lat": 59.928275, "lon": 30.30037199999999}, "subway": "", "favorites_count": 69, "is_closed": false, "categories": ["second-hand"], "short_title": "Christs Teeth", "tags": ["секонд хенды (магазины)"], "location": "spb", "noise_level": 0.61, "mood1": "рад", "mood2": "тя", "mood3": "фил", "occupancy": 0.83}'
-        + ',{"id": 6810, "title": "секонд-хенд Christs Teeth", "slug": "christs-teeth", "address": "Лиговский просп., д. 74", "timetable": "ежедневно 13:00–21:00", "phone": "+7 921 552-82-92", "is_stub": false, "description": "<p>Категорично-ироничный секонд-хенд с огромным обилием всего, что только можно себе представить.</p>", "site_url": "https://kudago.com/spb/place/christs-teeth/", "foreign_url": "https://vk.com/christ_teeth", "coords": {"lat": 59.928275, "lon": 30.30037199999999}, "subway": "", "favorites_count": 69, "is_closed": false, "categories": ["second-hand"], "short_title": "Christs Teeth", "tags": ["секонд хенды (магазины)"], "location": "spb", "noise_level": 0.61, "mood1": "рад", "mood2": "тя", "mood3": "фил", "occupancy": 0.83}]'
-        )
+        f = open('all_places_corrected.json', 'r')
+        s = f.read()
+        return HttpResponse(s)
+        # return HttpResponse('[{"id": 6810, "title": "секонд-хенд Christs Teeth", "slug": "christs-teeth", "address": "Лиговский просп., д. 74", "timetable": "ежедневно 13:00–21:00", "phone": "+7 921 552-82-92", "is_stub": false, "description": "<p>Категорично-ироничный секонд-хенд с огромным обилием всего, что только можно себе представить.</p>", "site_url": "https://kudago.com/spb/place/christs-teeth/", "foreign_url": "https://vk.com/christ_teeth", "coords": {"lat": 59.928275, "lon": 30.30037199999999}, "subway": "", "favorites_count": 69, "is_closed": false, "categories": ["second-hand"], "short_title": "Christs Teeth", "tags": ["секонд хенды (магазины)"], "location": "spb", "noise_level": 0.61, "mood1": "рад", "mood2": "тя", "mood3": "фил", "occupancy": 0.83}'
+        # + ',{"id": 6810, "title": "секонд-хенд Christs Teeth", "slug": "christs-teeth", "address": "Лиговский просп., д. 74", "timetable": "ежедневно 13:00–21:00", "phone": "+7 921 552-82-92", "is_stub": false, "description": "<p>Категорично-ироничный секонд-хенд с огромным обилием всего, что только можно себе представить.</p>", "site_url": "https://kudago.com/spb/place/christs-teeth/", "foreign_url": "https://vk.com/christ_teeth", "coords": {"lat": 59.928275, "lon": 30.30037199999999}, "subway": "", "favorites_count": 69, "is_closed": false, "categories": ["second-hand"], "short_title": "Christs Teeth", "tags": ["секонд хенды (магазины)"], "location": "spb", "noise_level": 0.61, "mood1": "рад", "mood2": "тя", "mood3": "фил", "occupancy": 0.83}]'
+        # )
     elif request.method =="GET":
         return HttpResponse("GET requests is not supported")
+
+@csrf_exempt
+def get_with_condition(request):
+    if request.method == "POST":
+        req_data = str((request.body).decode("utf-8"))
+        print(req_data)
+        parsed_data = json.loads(req_data)
+        usr_type = str(parsed_data.get("type"))
+        if usr_type == "noisy":
+            usr_val = parsed_data.get("value")
+            f = open('all_places_corrected.json', 'r')
+            s = f.read()
+            df = pd.read_json('all_places_corrected.json', typ='frame')
+            if usr_val == 0:
+                df1 = df[df.noise_level<0.33]
+            elif usr_val == 1:
+                df1 = df[(df.noise_level<0.66) & (df.noise_level>0.33)]
+            else:
+                df1 = df[df.noise_level > 0.66]
+            # print(str(df1.to_json(orient='records')))
+            return HttpResponse(str(df1.to_json(orient='records')))
